@@ -1,0 +1,24 @@
+{
+    "name": "tendopay/sdk-php",
+    "description": "A Simple SDK to connect TendoPay Gateway",
+    "keywords": ["paygate", "tendopay", "philippines"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sangmin Lee",
+            "email": "sangmin@candydigital.co"
+        }
+    ],
+    "type": "project",
+    "require": {
+		"php": ">=7.1"
+    },
+    "require-dev": {
+		"phpunit/phpunit": "8.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "TendoPay\\SDK\\": "src/"
+        }
+    }
+}
