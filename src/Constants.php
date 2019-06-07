@@ -17,7 +17,7 @@ class Constants
     public const HASH_ALGORITHM = 'sha256';
 
     public const BASE_API_URL = 'https://app.tendopay.ph';
-    public const SANDBOX_BASE_API_URL = 'https://sandbox.tendopay.ph';
+    public const SANDBOX_BASE_API_URL = 'https://sandbox.tendopay.dev';
 
     public const REDIRECT_URI = 'payments/authorise';
     public const VERIFICATION_ENDPOINT_URI = 'payments/api/v1/verification';
