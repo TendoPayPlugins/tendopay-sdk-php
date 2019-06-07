@@ -63,7 +63,6 @@ class TendoPayClient
 
     public function __construct($options = [])
     {
-        $this->log = $options['logger'] ?? $this->initLogger();
         $this->initEnvironment();
         $this->setSandBoxMode(false);
         $this->initRedirectURL();
