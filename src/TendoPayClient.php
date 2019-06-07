@@ -5,8 +5,6 @@ namespace TendoPay\SDK;
 use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Exception\VerifyTransactionException;
 use TendoPay\SDK\Models\AccessToken;
@@ -65,7 +63,6 @@ class TendoPayClient
 
     public function __construct($options = [])
     {
-        $this->log = $options['logger'] ?? $this->initLogger();
         $this->initEnvironment();
         $this->setSandBoxMode(false);
         $this->initRedirectURL();
@@ -78,15 +75,6 @@ class TendoPayClient
     protected function setSandBoxMode($bool): void
     {
         putenv('TENDOPAY_SANDBOX_ENABLED=' . $bool);
-    }
-
-    /**
-     * @return Logger
-     * @throws \Exception
-     */
-    protected function initLogger(): Logger
-    {
-        return (new Logger('TendoPayClient'))->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
     }
 
     /**
