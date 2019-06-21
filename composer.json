@@ -17,10 +17,9 @@
       "role": "Developer"
     }
   ],
-  "minimum-stability": "dev",
-  "prefer-stable":  "true",
   "require": {
     "php": ">=7.1",
+    "monolog/monolog": "^1.24",
     "vlucas/phpdotenv": "^3.3",
     "guzzlehttp/guzzle": "^6.3"
   },
