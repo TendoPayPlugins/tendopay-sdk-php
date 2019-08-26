@@ -3,12 +3,16 @@
 namespace TendoPay\SDK;
 
 use Dotenv\Dotenv;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use InvalidArgumentException;
 use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Exception\VerifyTransactionException;
 use TendoPay\SDK\Models\AccessToken;
 use TendoPay\SDK\Models\Payment;
+use TendoPay\SDK\Models\PurchaseTransaction;
+use TendoPay\SDK\Models\Transaction;
 use TendoPay\SDK\Models\VerifyTransactionRequest;
 use TendoPay\SDK\Models\VerifyTransactionResponse;
 use TendoPay\SDK\Traits\TendoPayHelper;
@@ -63,7 +67,6 @@ class TendoPayClient
 
     public function __construct($options = [])
     {
-        $this->log = $options['logger'] ?? $this->initLogger();
         $this->initEnvironment();
         $this->setSandBoxMode(false);
         $this->initRedirectURL();
@@ -136,13 +139,18 @@ class TendoPayClient
     }
 
     /**
+     * @param bool $usePersonalAccessToken
      * @return array
      * @throws TendoPayConnectionException
      */
-    protected function getAuthorizationHeader(): array
+    protected function getAuthorizationHeader($usePersonalAccessToken = false): array
     {
+        $accessToken = $usePersonalAccessToken ?
+            $this->getPersonalAccessToken() :
+            $this->getAccessToken();
+
         return [
-            'Authorization' => 'Bearer ' . $this->getAccessToken(),
+            'Authorization' => 'Bearer ' . $accessToken,
         ];
     }
 
@@ -170,6 +178,19 @@ class TendoPayClient
 
         $this->accessToken = new AccessToken($token);
         return $this->accessToken->getToken();
+    }
+
+    /**
+     * Return Personal Access Token
+     * @return string
+     */
+    protected function getPersonalAccessToken(): string
+    {
+        $token = (string)getenv('MERCHANT_PERSONAL_ACCESS_TOKEN', true);
+        if (!$token) {
+            throw new InvalidArgumentException('MERCHANT_PERSONAL_ACCESS_TOKEN does not exists');
+        }
+        return $token;
     }
 
     /**
@@ -334,6 +355,23 @@ class TendoPayClient
         );
     }
 
+    /**
+     * Retrieve Transaction Details with the transactionNumber
+     * @param $transactionNumber
+     * @return Transaction
+     * @throws Exception
+     */
+    public function getTransactionDetail($transactionNumber): Transaction
+    {
+        $params = [];
+        $response = $this->request('GET',
+            Constants::getTransactionDetailEndpointURI($transactionNumber),
+            $params,
+            $this->getAuthorizationHeader(true));
+
+        $transaction = json_decode($response, true);
+        return new Transaction($transaction);
+    }
 }
 
 
