@@ -11,6 +11,8 @@ use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Exception\VerifyTransactionException;
 use TendoPay\SDK\Models\AccessToken;
 use TendoPay\SDK\Models\Payment;
+use TendoPay\SDK\Models\PurchaseTransaction;
+use TendoPay\SDK\Models\Transaction;
 use TendoPay\SDK\Models\VerifyTransactionRequest;
 use TendoPay\SDK\Models\VerifyTransactionResponse;
 use TendoPay\SDK\Traits\TendoPayHelper;
@@ -356,18 +358,19 @@ class TendoPayClient
     /**
      * Retrieve Transaction Details with the transactionNumber
      * @param $transactionNumber
-     * @return array|mixed
-     * @throws TendoPayConnectionException
+     * @return Transaction
+     * @throws Exception
      */
-    public function getTransactionDetail($transactionNumber)
+    public function getTransactionDetail($transactionNumber): Transaction
     {
         $params = [];
         $response = $this->request('GET',
             Constants::getTransactionDetailEndpointURI($transactionNumber),
             $params,
-            $this->getAuthorizationHeader());
+            $this->getAuthorizationHeader(true));
 
-        return json_decode($response, true) ?? [];
+        $transaction = json_decode($response, true);
+        return new Transaction($transaction);
     }
 }
 

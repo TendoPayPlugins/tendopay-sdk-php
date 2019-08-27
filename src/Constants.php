@@ -59,6 +59,37 @@ class Constants
     public const STATUS_FAILURE = 'failure';
 
     /**
+     * Notification Parameters
+     */
+    public const TRANSACTION_STATUS = 'status';
+    public const NOTIFIED_AT = 'notified_at';
+    public const MERCHANT_ID = 'merchant_id';
+    public const MERCHANT_ORDER_ID = 'merchant_order_id';
+    public const AMOUNT = 'amount';
+    public const CREATED_AT = 'created_at';
+
+
+    /**
+     * Purchase Transaction successfully completed
+     */
+    public const PURCHASE_TRANSACTION_SUCCESS = 'PTOK';
+
+    /**
+     * Purchase Transaction not successfully completed
+     */
+    public const PURCHASE_TRANSACTION_FAILURE = 'PTNG';
+
+    /**
+     * Purchase Transaction has canceled
+     */
+    public const PURCHASE_TRANSACTION_CANCELED = 'PTCA';
+
+    /**
+     * Cancel previous purchase transaction successfully completed
+     */
+    public const CANCEL_TRANSACTION_SUCCESS = 'CTOK';
+
+    /**
      * Below public constants are the keys of description object that is being sent during request to Description Endpoint
      */
     public const ITEMS_DESC_PROPNAME = 'items';
