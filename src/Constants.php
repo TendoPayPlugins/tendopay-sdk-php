@@ -24,10 +24,15 @@ class Constants
     public const AUTHORIZATION_ENDPOINT_URI = 'payments/api/v1/authTokenRequest';
     public const DESCRIPTION_ENDPOINT_URI = 'payments/api/v1/paymentDescription';
     public const BEARER_TOKEN_ENDPOINT_URI = 'oauth/token';
-    public const ORDER_STATUS_TRANSITION_ENDPOINT_URL = 'payments/api/v1/orderUpdate';
+    public const ORDER_STATUS_TRANSITION_ENDPOINT_URI = 'payments/api/v1/orderUpdate';
+    /**
+     * Gets the transaction detail endpoint uri
+     */
+    public const TRANSACTION_DETAIL_ENDPOINT_URI = '/merchants/api/v1/transactions/{transactionNumber}';
 
     public const TENDOPAY_ICON = 'https://s3.ca-central-1.amazonaws.com/candydigital/images/tendopay/tp-icon-32x32.png';
     public const TENDOPAY_FAQ = 'https://tendopay.ph/page-faq.html';
+
 
     /**
      * Below public constant names are used as keys of data send to or received from TP API
@@ -52,6 +57,37 @@ class Constants
 
     public const STATUS_SUCCESS = 'success';
     public const STATUS_FAILURE = 'failure';
+
+    /**
+     * Notification Parameters
+     */
+    public const TRANSACTION_STATUS = 'status';
+    public const NOTIFIED_AT = 'notified_at';
+    public const MERCHANT_ID = 'merchant_id';
+    public const MERCHANT_ORDER_ID = 'merchant_order_id';
+    public const AMOUNT = 'amount';
+    public const CREATED_AT = 'created_at';
+
+
+    /**
+     * Purchase Transaction successfully completed
+     */
+    public const PURCHASE_TRANSACTION_SUCCESS = 'PTOK';
+
+    /**
+     * Purchase Transaction not successfully completed
+     */
+    public const PURCHASE_TRANSACTION_FAILURE = 'PTNG';
+
+    /**
+     * Purchase Transaction has canceled
+     */
+    public const PURCHASE_TRANSACTION_CANCELED = 'PTCA';
+
+    /**
+     * Cancel previous purchase transaction successfully completed
+     */
+    public const CANCEL_TRANSACTION_SUCCESS = 'CTOK';
 
     /**
      * Below public constants are the keys of description object that is being sent during request to Description Endpoint
@@ -153,4 +189,17 @@ class Constants
         return (bool)getenv('TENDOPAY_SANDBOX_ENABLED', true);
     }
 
+    /**
+     * Gets the transaction detail endpoint uri
+     * @param string $transactionNumber
+     * @return string
+     */
+    public static function getTransactionDetailEndpointURI($transactionNumber): string
+    {
+        return str_replace(
+            '{transactionNumber}',
+            $transactionNumber,
+            self::TRANSACTION_DETAIL_ENDPOINT_URI
+        );
+    }
 }
