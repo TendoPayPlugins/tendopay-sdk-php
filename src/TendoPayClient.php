@@ -372,6 +372,25 @@ class TendoPayClient
         $transaction = json_decode($response, true);
         return new Transaction($transaction);
     }
+
+    /**
+     * Cancel transaction
+     * @param $transactionNumber
+     * @return mixed|string
+     * @throws TendoPayConnectionException
+     */
+    public function cancelPayment($transactionNumber)
+    {
+        $params = [
+            Constants::TRANSACTION_NO_PARAM => $transactionNumber,
+        ];
+
+        $body = $this->request('POST',
+            Constants::get_cancel_payment_endpoint_uri(),
+            static::appendHash($params),
+            $this->getAuthorizationHeader());
+        return json_decode($body, false) ?? '';
+    }
 }
 
 

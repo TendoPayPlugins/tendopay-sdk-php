@@ -25,6 +25,7 @@ class Constants
     public const DESCRIPTION_ENDPOINT_URI = 'payments/api/v1/paymentDescription';
     public const BEARER_TOKEN_ENDPOINT_URI = 'oauth/token';
     public const ORDER_STATUS_TRANSITION_ENDPOINT_URI = 'payments/api/v1/orderUpdate';
+    public const CANCEL_PAYMENT_ENDPOINT_URI = 'payments/api/v1/cancelPayment';
     /**
      * Gets the transaction detail endpoint uri
      */
@@ -201,5 +202,13 @@ class Constants
             $transactionNumber,
             self::TRANSACTION_DETAIL_ENDPOINT_URI
         );
+    }
+
+    /**
+     * Get cancel payment uri
+     */
+    public static function get_cancel_payment_endpoint_uri(): string
+    {
+        return self::CANCEL_PAYMENT_ENDPOINT_URI;
     }
 }
