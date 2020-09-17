@@ -29,6 +29,11 @@ class Transaction
     protected $createdAt;
     protected $status;
 
+    /**
+     * Transaction constructor.
+     * @param  array  $response
+     * @throws TendoPayParameterException
+     */
     public function __construct(array $response = [])
     {
         $this->merchantId = $response[Constants::MERCHANT_ID] ?? null;
@@ -93,6 +98,21 @@ class Transaction
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * @return null[]
+     */
+    public function toArray(): array
+    {
+        return [
+            'tp_merchant_id' => $this->getMerchantId(),
+            'tp_merchant_order_id' => $this->getMerchantOrderId(),
+            'tp_amount' => $this->getAmount(),
+            'tp_transaction_id' => $this->getTransactionNumber(),
+            'tp_transaction_status' => $this->getStatus(),
+            'tp_created_at' => $this->getCreatedAt(),
+        ];
     }
 
 }
