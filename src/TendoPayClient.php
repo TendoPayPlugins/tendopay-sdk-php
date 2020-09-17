@@ -419,11 +419,16 @@ class TendoPayClient
      */
     public function getTransactionDetail($transactionNumber): Transaction
     {
+        $usePersonalAccessToken = false;
+        try {
+            $usePersonalAccessToken = (bool) $this->getPersonalAccessToken();
+        } catch (\InvalidArgumentException $e) {}
+
         $params = [];
         $response = $this->request('GET',
             Constants::getTransactionDetailEndpointURI($transactionNumber),
             $params,
-            $this->getAuthorizationHeader(), true);
+            $this->getAuthorizationHeader($usePersonalAccessToken), true);
 
         $transaction = json_decode($response, true);
 
