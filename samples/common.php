@@ -25,7 +25,7 @@ function dump()
     echo '</pre>';
 }
 
-$credentials = $_SESSION['credentials'];
+$credentials = $_SESSION['credentials'] ?? null;
 //putenv('MERCHANT_ID='.$credentials->merchant_id);
 //putenv('MERCHANT_SECRET='.$credentials->merchant_secret);
 //putenv('CLIENT_ID='.$credentials->client_id);

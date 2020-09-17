@@ -32,6 +32,7 @@ http://localhost:8000/
 
 - Using .env
   > MERCHANT_ID,MERCHANT_SECRET for test can get them at [TendoPay Sandbox](https://sandbox.tendopay.ph)
+
 ```bash
 ## Merchant Credentials
 MERCHANT_ID=
@@ -58,6 +59,7 @@ $client = new TendoPayClient();
 ```
 
 - Using $config variable
+
 ```php
 use TendoPay\SDK\TendoPayClient;
 
@@ -108,6 +110,7 @@ try {
 ```
 
 ### Callback (redirected page)
+
 ```php
 use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Models\VerifyTransactionRequest;
@@ -146,6 +149,34 @@ try {
     $client->cancelPayment($transactionNumber);
     // merchant process here
 
+} catch (TendoPayConnectionException $e) {
+    echo 'Connection Error:'.$e->getMessage();
+} catch (Exception $e) {
+    echo 'Runtime Error:'.$e->getMessage();
+}
+```
+
+
+### Show Transaction Detail
+
+```php
+use TendoPay\SDK\Exception\TendoPayConnectionException;
+use TendoPay\SDK\TendoPayClient;
+
+$client = new TendoPayClient();
+
+try {
+
+    $transaction = $client->getTransactionDetail($transactionNumber);
+
+    // merchant process here
+    // $transaction->getMerchantId();
+    // $transaction->getMerchantOrderId();
+    // $transaction->getAmount();
+    // $transaction->getTransactionNumber();
+    // $transaction->getCreatedAt();
+    // $transaction->getStatus();
+    
 } catch (TendoPayConnectionException $e) {
     echo 'Connection Error:'.$e->getMessage();
 } catch (Exception $e) {
