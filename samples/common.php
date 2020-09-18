@@ -35,10 +35,10 @@ $credentials = $_SESSION['credentials'] ?? null;
 //putenv('TENDOPAY_SANDBOX_ENABLED=true');
 
 $config = [
-    'MERCHANT_ID' => $credentials->merchant_id,
-    'MERCHANT_SECRET' => $credentials->merchant_secret,
-    'CLIENT_ID' => $credentials->client_id,
-    'CLIENT_SECRET' => $credentials->client_secret,
+    'MERCHANT_ID' => $credentials->merchant_id ?? '',
+    'MERCHANT_SECRET' => $credentials->merchant_secret ?? '',
+    'CLIENT_ID' => $credentials->client_id ?? '',
+    'CLIENT_SECRET' => $credentials->client_secret ?? '',
     'REDIRECT_URL' => $credentials->redirect_url ?? '',
     'ERROR_REDIRECT_URL' => $credentials->error_redirect_url ?? '',
     'TENDOPAY_SANDBOX_ENABLED' => true,
