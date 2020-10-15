@@ -17,7 +17,7 @@ class Constants
     public const HASH_ALGORITHM = 'sha256';
 
     public const BASE_API_URL = 'https://app.tendopay.ph';
-    public const SANDBOX_BASE_API_URL = 'https://sandbox.tendopay.dev';
+    public const SANDBOX_BASE_API_URL = 'https://sandbox.tendopay.ph';
 
     public const REDIRECT_URI = 'payments/authorise';
     public const VERIFICATION_ENDPOINT_URI = 'payments/api/v1/verification';
@@ -25,10 +25,11 @@ class Constants
     public const DESCRIPTION_ENDPOINT_URI = 'payments/api/v1/paymentDescription';
     public const BEARER_TOKEN_ENDPOINT_URI = 'oauth/token';
     public const ORDER_STATUS_TRANSITION_ENDPOINT_URI = 'payments/api/v1/orderUpdate';
+    public const CANCEL_PAYMENT_ENDPOINT_URI = 'payments/api/v1/cancelPayment';
     /**
      * Gets the transaction detail endpoint uri
      */
-    public const TRANSACTION_DETAIL_ENDPOINT_URI = '/merchants/api/v1/transactions/{transactionNumber}';
+    public const TRANSACTION_DETAIL_ENDPOINT_URI = 'merchants/api/v1/transactions/{transactionNumber}';
 
     public const TENDOPAY_ICON = 'https://s3.ca-central-1.amazonaws.com/candydigital/images/tendopay/tp-icon-32x32.png';
     public const TENDOPAY_FAQ = 'https://tendopay.ph/page-faq.html';
@@ -115,7 +116,7 @@ class Constants
     {
         if (self::is_sandbox_enabled()) {
             $sandBoxURL = getenv('SANDBOX_HOST_URL', true);
-            return $sandBoxURL ? $sandBoxURL : self::SANDBOX_BASE_API_URL;
+            return $sandBoxURL ?: self::SANDBOX_BASE_API_URL;
         }
         return self::BASE_API_URL;
     }
@@ -201,5 +202,13 @@ class Constants
             $transactionNumber,
             self::TRANSACTION_DETAIL_ENDPOINT_URI
         );
+    }
+
+    /**
+     * Get cancel payment uri
+     */
+    public static function get_cancel_payment_endpoint_uri(): string
+    {
+        return self::CANCEL_PAYMENT_ENDPOINT_URI;
     }
 }
