@@ -1,5 +1,11 @@
 <template>
   <tp-collapse id="tp-payment" title="Make Payment">
+    <template #side-header>
+      <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-primary" v-if="!loading" @click="submit">Checkout</button>
+        <div class="mr-5" v-if="loading"><i class="fa fa-spinner fa-spin fa-fw"></i></div>
+      </div>
+    </template>
     <template #body>
       <form method="post" action="/payment.php" ref="form">
         <div class="form-group">
@@ -19,10 +25,10 @@
                  v-model="payload.tp_amount">
         </div>
 
-        <div class="d-flex justify-content-end">
-          <button type="button" class="btn btn-primary" v-if="!loading" @click="submit">Checkout</button>
-          <div class="mr-5" v-if="loading"><i class="fa fa-spinner fa-spin fa-fw"></i></div>
-        </div>
+<!--        <div class="d-flex justify-content-end">-->
+<!--          <button type="button" class="btn btn-primary" v-if="!loading" @click="submit">Checkout</button>-->
+<!--          <div class="mr-5" v-if="loading"><i class="fa fa-spinner fa-spin fa-fw"></i></div>-->
+<!--        </div>-->
       </form>
     </template>
   </tp-collapse>
@@ -47,22 +53,15 @@ module.exports = {
     }
   },
   methods: {
-    initOrder () {
-      const tp_merchant_order_id = `TEST-ORD-${Date.now()}`
-      this.payload = {
-        tp_merchant_order_id,
-        tp_description: `Invoice #${tp_merchant_order_id}`,
-        tp_amount: 1500
-      }
-    },
-    submit() {
+    submit () {
       this.loading = true
-      this.$refs.form.submit()
+      // this.$refs.form.submit()
+      this.$emit('submit', this.payload)
     }
   },
   mounted () {
     this.loading = false
-    this.initOrder()
+    // this.initOrder()
   }
 }
 </script>

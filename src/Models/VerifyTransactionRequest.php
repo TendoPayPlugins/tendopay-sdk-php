@@ -3,6 +3,7 @@
 namespace TendoPay\SDK\Models;
 
 use TendoPay\SDK\Constants;
+use TendoPay\SDK\V2\ConstantsV2;
 
 class VerifyTransactionRequest
 {
@@ -17,6 +18,8 @@ class VerifyTransactionRequest
     private $userId;
 
     private $hash;
+
+    private $request;
 
     /**
      * TendoPayCallbackRequest constructor.
@@ -33,12 +36,27 @@ class VerifyTransactionRequest
      */
     public function __construct(array $request)
     {
-        $this->disposition = $request[Constants::DISPOSITION_PARAM] ?? Constants::STATUS_FAILURE;
-        $this->transactionNumber = $request[Constants::TRANSACTION_NO_PARAM] ?? '';
-        $this->verificationToken = $request[Constants::VERIFICATION_TOKEN_PARAM] ?? '';
-        $this->merchantOrderId = $request[Constants::ORDER_ID_PARAM] ?? '';
-        $this->userId = $request[Constants::USER_ID_PARAM] ?? '';
-        $this->hash = $request[Constants::HASH_PARAM] ?? '';
+        if ($request['tp_transaction_id'] ?? null) {
+            //[tp_transaction_status] => FAILED
+            //[tp_transaction_id] => 20412
+            //[tp_merchant_order_id] => TEST-ORD-1603907027113
+            //[tp_message] => Your available TendoPay credit is ₱1. You do not have the sufficient credits for this purchase. Please make a purchase below this amount.
+            //[x_signature] => 77daab16115b25454f4d769ea96de2dcfd22ffb362651cc5274e5635c5a4e924
+            $this->request = $request;
+            $this->disposition = $request[ConstantsV2::STATUS_PARAM] ?? Constants::STATUS_FAILURE;
+            $this->transactionNumber = $request[ConstantsV2::TRANSACTION_NO_PARAM] ?? '';
+            $this->verificationToken = $request[ConstantsV2::VERIFICATION_TOKEN_PARAM] ?? '';
+            $this->merchantOrderId = $request[ConstantsV2::ORDER_ID_PARAM] ?? '';
+            $this->userId = $request[ConstantsV2::USER_ID_PARAM] ?? '';
+            $this->hash = $request[ConstantsV2::HASH_PARAM] ?? '';
+        } else {
+            $this->disposition = $request[Constants::DISPOSITION_PARAM] ?? Constants::STATUS_FAILURE;
+            $this->transactionNumber = $request[Constants::TRANSACTION_NO_PARAM] ?? '';
+            $this->verificationToken = $request[Constants::VERIFICATION_TOKEN_PARAM] ?? '';
+            $this->merchantOrderId = $request[Constants::ORDER_ID_PARAM] ?? '';
+            $this->userId = $request[Constants::USER_ID_PARAM] ?? '';
+            $this->hash = $request[Constants::HASH_PARAM] ?? '';
+        }
     }
 
     /**
@@ -87,6 +105,15 @@ class VerifyTransactionRequest
     public function getUserId()
     {
         return $this->userId;
+    }
+
+    /**
+     * return raw request
+     * @return mixed
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 
 }

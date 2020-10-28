@@ -7,23 +7,27 @@
         <tr class="text-center">
           <th scope="col">#</th>
           <th scope="col">Status</th>
+          <th scope="col">Message</th>
           <th scope="col">Detail</th>
           <th scope="col">Cancel</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-if="transactions" v-for="({transactionNumber, status, hash}) in transactions" :key="hash"
+        <tr v-if="transactions" v-for="({transactionNumber, status, hash, message = ''}) in transactions" :key="hash"
             class="text-center">
           <th scope="row">{{ transactionNumber }}</th>
           <td>{{ status }}</td>
+          <td>{{ message }}</td>
           <td>
-            <button v-if="!loading.show.has(transactionNumber)" type="button" class="btn btn-sm btn-link" @click="show(transactionNumber)">
+            <button v-if="!loading.show.has(transactionNumber)" type="button" class="btn btn-sm btn-link"
+                    @click="show(transactionNumber)">
               Show
             </button>
             <i class="fa fa-spinner fa-spin fa-fw" v-if="loading.show.has(transactionNumber)"></i>
           </td>
           <td>
-            <button v-if="!loading.cancel.has(transactionNumber)" type="button" class="btn btn-sm btn-link" @click="cancel(transactionNumber)">
+            <button v-if="!loading.cancel.has(transactionNumber)" type="button" class="btn btn-sm btn-link"
+                    @click="cancel(transactionNumber)">
               Cancel
             </button>
             <i class="fa fa-spinner fa-spin fa-fw" v-if="loading.cancel.has(transactionNumber)"></i>
@@ -44,7 +48,7 @@
 
       <div class="collapse show" id="show-transaction" v-if="transaction">
         <div class="card card-body">
-          <pre>{{transaction}}</pre>
+          <pre>{{ transaction }}</pre>
           <button type="button" class="close" data-dismiss="alert" aria-label="Close" @click="transaction = null">
             <i class="fa fa-angle-double-up" aria-hidden="true"></i>
           </button>

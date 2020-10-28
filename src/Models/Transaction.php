@@ -5,6 +5,7 @@ namespace TendoPay\SDK\Models;
 
 use TendoPay\SDK\Constants;
 use TendoPay\SDK\Exception\TendoPayParameterException;
+use TendoPay\SDK\V2\ConstantsV2;
 
 /**
  * Class Transaction
@@ -36,18 +37,34 @@ class Transaction
      */
     public function __construct(array $response = [])
     {
-        $this->merchantId = $response[Constants::MERCHANT_ID] ?? null;
-        $this->merchantOrderId = $response[Constants::MERCHANT_ORDER_ID] ?? null;
-        $this->amount = $response[Constants::AMOUNT] ?? null;
-        $this->transactionNumber = $response[Constants::TRANSACTION_NO_PARAM] ?? null;
-        $this->status = $response[Constants::TRANSACTION_STATUS] ?? null;
-        $this->createdAt = $response[Constants::CREATED_AT] ?? null;
+        if ($response[ConstantsV2::TRANSACTION_NO_PARAM] ?? null) {
+            $this->merchantId = $response[ConstantsV2::MERCHANT_ID] ?? null;
+            $this->merchantOrderId = $response[ConstantsV2::MERCHANT_ORDER_ID] ?? null;
+            $this->amount = $response[ConstantsV2::AMOUNT] ?? null;
+            $this->transactionNumber = $response[ConstantsV2::TRANSACTION_NO_PARAM] ?? null;
+            $this->status = $response[ConstantsV2::TRANSACTION_STATUS] ?? null;
+            $this->createdAt = $response[ConstantsV2::CREATED_AT] ?? null;
 
-        if (!$this->transactionNumber || !$this->merchantOrderId) {
-            throw new TendoPayParameterException(sprintf('%s, %s cannot be null',
-                Constants::TRANSACTION_NO_PARAM,
-                Constants::MERCHANT_ORDER_ID
-            ));
+            if (!$this->transactionNumber || !$this->merchantOrderId) {
+                throw new TendoPayParameterException(sprintf('%s, %s cannot be null',
+                    ConstantsV2::TRANSACTION_NO_PARAM,
+                    ConstantsV2::MERCHANT_ORDER_ID
+                ));
+            }
+        } else {
+            $this->merchantId = $response[Constants::MERCHANT_ID] ?? null;
+            $this->merchantOrderId = $response[Constants::MERCHANT_ORDER_ID] ?? null;
+            $this->amount = $response[Constants::AMOUNT] ?? null;
+            $this->transactionNumber = $response[Constants::TRANSACTION_NO_PARAM] ?? null;
+            $this->status = $response[Constants::TRANSACTION_STATUS] ?? null;
+            $this->createdAt = $response[Constants::CREATED_AT] ?? null;
+
+            if (!$this->transactionNumber || !$this->merchantOrderId) {
+                throw new TendoPayParameterException(sprintf('%s, %s cannot be null',
+                    Constants::TRANSACTION_NO_PARAM,
+                    Constants::MERCHANT_ORDER_ID
+                ));
+            }
         }
     }
 

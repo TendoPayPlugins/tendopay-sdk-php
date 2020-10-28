@@ -34,6 +34,19 @@ trait TendoPayHelper
     }
 
     /**
+     * @param  array  $payload
+     * @return string
+     */
+    public static function hashForV2(array $payload): string
+    {
+        ksort($payload);
+        $message = array_reduce(array_keys($payload), static function ($p, $k) use ($payload) {
+            return strpos($k, 'tp_') === 0 ? $p.$k.trim($payload[$k]) : $p;
+        }, '');
+        return hash_hmac('sha256', $message, self::getClientSecret());
+    }
+
+    /**
      * @param array $params
      * @return array
      */
@@ -42,6 +55,18 @@ trait TendoPayHelper
         $hash = static::hash($params);
         return array_merge($params, [
             'tendopay_hash' => $hash
+        ]);
+    }
+
+    /**
+     * @param  array  $params
+     * @return array
+     */
+    public static function appendV2Hash(array $params): array
+    {
+        $hash = static::hashForV2($params);
+        return array_merge($params, [
+            'x_signature' => $hash
         ]);
     }
 

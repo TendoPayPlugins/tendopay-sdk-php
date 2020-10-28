@@ -39,10 +39,10 @@
 
       <div class="card-body">
         <p class="card-text">
-          <tp-sdk-credentials v-model="credentials"/>
+          <tp-sdk-credentials v-model="credentials" @save="saveCredentials"/>
         </p>
         <p class="card-text">
-          <tp-payment v-model="payload"/>
+          <tp-payment v-model="payload" @submit="submitForm"/>
         </p>
       </div>
 
@@ -70,6 +70,7 @@
     },
     data: {
       credentials: {
+        tp_sdk_version: 'v2',
         merchant_id: null,
         merchant_secret: null,
         client_id: null,
@@ -85,6 +86,28 @@
       transactions: null,
     },
     methods: {
+      initOrder () {
+        const tp_merchant_order_id = `TEST-ORD-${Date.now()}`
+        this.payload = {
+          tp_merchant_order_id,
+          tp_description: `Invoice #${tp_merchant_order_id}`,
+          tp_amount: 1500
+        }
+      },
+      async saveCredentials () {
+        try {
+          window.setTimeout(async () => {
+            const { data } = await axios.post(API_END_POINT, {
+              job: 'SAVE_CREDENTIALS',
+              credentials: this.credentials
+            })
+            // console.log('saveCredentials', data)
+            this.$emit('input', this.credentials)
+          }, 400)
+        } catch (e) {
+          console.log('error:saveCredentials() ', e)
+        }
+      },
       async submit () {
         // console.log('submit', this.payload)
         const { data } = await axios.post(API_END_POINT, {
@@ -92,12 +115,41 @@
         })
         // console.log('getCredentials', data)
       },
-      async initTransactions() {
+      async initTransactions () {
         const { data } = await axios.post(API_END_POINT, {
           job: 'GET_TRANSACTIONS'
         })
         // console.log('getTransactions', data)
         this.transactions = data
+      },
+      async submitForm () {
+        console.log('submit form:', this.credentials, this.payload)
+        const { tp_sdk_version = '', redirect_url = '' } = this.credentials
+        const params = {
+          ...this.payload,
+          tp_sdk_version,
+          tp_redirect_url: redirect_url,
+        }
+        // const { data } = await axios.post('/payment.php', params)
+        // console.log('data', data)
+
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = '/payment.php'
+
+        for (const key in params) {
+          if (params.hasOwnProperty(key)) {
+            const hiddenField = document.createElement('input')
+            hiddenField.type = 'hidden'
+            hiddenField.name = key
+            hiddenField.value = params[key]
+
+            form.appendChild(hiddenField)
+          }
+        }
+
+        document.body.appendChild(form)
+        form.submit()
       }
     },
     mounted () {
@@ -105,6 +157,8 @@
         ...this.credentials,
         ...initCredentials,
       }
+      this.initOrder()
+      this.saveCredentials()
       this.initTransactions()
     }
   })

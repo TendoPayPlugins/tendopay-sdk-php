@@ -25,6 +25,17 @@ function dump()
     echo '</pre>';
 }
 
+/**
+ *
+ * @param  mixed  $response
+ * @param  int  $status
+ */
+function json($response = [], $status = 200)
+{
+    echo header('Content-Type: application/json', true, $status);
+    echo json_encode($response);
+}
+
 $credentials = $_SESSION['credentials'] ?? null;
 //putenv('MERCHANT_ID='.$credentials->merchant_id);
 //putenv('MERCHANT_SECRET='.$credentials->merchant_secret);
@@ -35,6 +46,7 @@ $credentials = $_SESSION['credentials'] ?? null;
 //putenv('TENDOPAY_SANDBOX_ENABLED=true');
 
 $config = [
+    'TP_SDK_VERSION' => $credentials->tp_sdk_version ?? '',
     'MERCHANT_ID' => $credentials->merchant_id ?? '',
     'MERCHANT_SECRET' => $credentials->merchant_secret ?? '',
     'CLIENT_ID' => $credentials->client_id ?? '',

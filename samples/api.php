@@ -2,19 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-use TendoPay\SDK\TendoPayClient;
 global $config;
-
-/**
- *
- * @param  mixed  $response
- * @param  int  $status
- */
-function json($response = [], $status = 200)
-{
-    echo header('Content-Type: application/json', true, $status);
-    echo json_encode($response);
-}
 
 ## Main
 $request = json_decode(file_get_contents('php://input'), false);
@@ -31,13 +19,17 @@ try {
         case 'GET_TRANSACTIONS':
             return json($_SESSION['transactions'] ?? []);
         case 'GET_TRANSACTION':
-            $client = new TendoPayClient($config);
+            $client = ($config['TP_SDK_VERSION'] ?? null) === 'v2' ?
+                new \TendoPay\SDK\V2\TendoPayClient($config) :
+                new \TendoPay\SDK\TendoPayClient($config);
             $response = $client->getTransactionDetail($request->transactionNumber);
 
             return json($response->toArray());
         case 'CANCEL_TRANSACTION':
             $transactionNumber = $request->transactionNumber;
-            $client = new TendoPayClient($config);
+            $client = ($config['TP_SDK_VERSION'] ?? null) === 'v2' ?
+                new \TendoPay\SDK\V2\TendoPayClient($config) :
+                new \TendoPay\SDK\TendoPayClient($config);
             $client->cancelPayment($transactionNumber);
 
             $_SESSION['transactions'] = array_filter($_SESSION['transactions'] ?? [],
