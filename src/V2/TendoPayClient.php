@@ -1,9 +1,10 @@
 <?php
 
-namespace TendoPay\SDK;
+namespace TendoPay\SDK\V2;
 
 use Exception;
 use InvalidArgumentException;
+use TendoPay\SDK\Constants;
 use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Exception\VerifyTransactionException;
 use TendoPay\SDK\Models\AccessToken;
@@ -26,8 +27,8 @@ class TendoPayClient
 
     use TendoPayHelper;
 
-    public const STATUS_SUCCESS = Constants::STATUS_SUCCESS;
-    public const STATUS_FAILURE = Constants::STATUS_FAILURE;
+    public const STATUS_SUCCESS = ConstantsV2::STATUS_SUCCESS;
+    public const STATUS_FAILURE = ConstantsV2::STATUS_FAILURE;
 
     /**
      * Configuration
@@ -51,11 +52,11 @@ class TendoPayClient
      */
     protected $redirectURL;
 
-    /**
-     * Redirect URL when the transaction fails
-     * @var string
-     */
-    protected $errorRedirectURL;
+//    /**
+//     * Redirect URL when the transaction fails
+//     * @var string
+//     */
+//    protected $errorRedirectURL;
 
     /**
      * @var bool
@@ -89,12 +90,12 @@ class TendoPayClient
      */
     protected function initCredentials(): void
     {
-        if (isset($this->config['MERCHANT_ID'])) {
-            putenv("MERCHANT_ID=".$this->config['MERCHANT_ID']);
-        }
-        if (isset($this->config['MERCHANT_SECRET'])) {
-            putenv("MERCHANT_SECRET=".$this->config['MERCHANT_SECRET']);
-        }
+//        if (isset($this->config['MERCHANT_ID'])) {
+//            putenv("MERCHANT_ID=".$this->config['MERCHANT_ID']);
+//        }
+//        if (isset($this->config['MERCHANT_SECRET'])) {
+//            putenv("MERCHANT_SECRET=".$this->config['MERCHANT_SECRET']);
+//        }
         if (isset($this->config['CLIENT_ID'])) {
             putenv("CLIENT_ID=".$this->config['CLIENT_ID']);
         }
@@ -109,7 +110,7 @@ class TendoPayClient
     protected function initRedirectURL(): void
     {
         $this->redirectURL = $this->config['REDIRECT_URL'] ?? (string) getenv('REDIRECT_URL', true);
-        $this->errorRedirectURL = $this->config['ERROR_REDIRECT_URL'] ?? (string) getenv('ERROR_REDIRECT_URL', true);
+//        $this->errorRedirectURL = $this->config['ERROR_REDIRECT_URL'] ?? (string) getenv('ERROR_REDIRECT_URL', true);
     }
 
     /**
@@ -157,6 +158,7 @@ class TendoPayClient
         }
 
         curl_close($ch);
+
         return $body;
     }
 
@@ -175,7 +177,7 @@ class TendoPayClient
             $data = $method === 'GET' ? $params : json_encode($params);
             $response = $this->requestCurl(
                 $method,
-                Constants::get_base_api_url().DIRECTORY_SEPARATOR.$requestURI,
+                ConstantsV2::get_base_api_url().DIRECTORY_SEPARATOR.$requestURI,
                 $data,
                 array_merge([
                     'Accept' => 'application/json',
@@ -222,7 +224,7 @@ class TendoPayClient
             'client_secret' => $this->getClientSecret(),
         ];
         $body = $this->request('POST',
-            Constants::get_bearer_token_endpoint_uri(),
+            ConstantsV2::get_bearer_token_endpoint_uri(),
             $params, [], true);
 
         $token = json_decode($body, true);
@@ -250,12 +252,13 @@ class TendoPayClient
      * @param $params
      * @return mixed|string
      * @throws TendoPayConnectionException
+     * @deprecated in v2
      */
     protected function getRequestToken($params)
     {
         return $this->request('POST',
-            Constants::get_authorization_endpoint_uri(),
-            static::appendHash($params),
+            ConstantsV2::get_authorization_endpoint_uri(),
+            static::appendV2Hash($params),
             $this->getAuthorizationHeader());
     }
 
@@ -267,8 +270,8 @@ class TendoPayClient
     protected function requestPaymentDescription($params)
     {
         return $this->request('POST',
-            Constants::get_description_endpoint_uri(),
-            static::appendHash($params),
+            ConstantsV2::get_description_endpoint_uri(),
+            static::appendV2Hash($params),
             $this->getAuthorizationHeader(),
             true);
     }
@@ -298,16 +301,16 @@ class TendoPayClient
         return $this;
     }
 
-    /**
-     * @param  string  $url
-     * @return TendoPayClient
-     */
-    public function setErrorRedirectURL(string $url): self
-    {
-        $this->errorRedirectURL = $url;
-
-        return $this;
-    }
+//    /**
+//     * @param  string  $url
+//     * @return TendoPayClient
+//     */
+//    public function setErrorRedirectURL(string $url): self
+//    {
+//        $this->errorRedirectURL = $url;
+//
+//        return $this;
+//    }
 
     /**
      * Enable Sandbox mode
@@ -340,56 +343,53 @@ class TendoPayClient
     public function getAuthorizeLink(): string
     {
         $params = [
-            Constants::AMOUNT_PARAM => $this->payment->getRequestAmount(),
-            Constants::ORDER_ID_PARAM => $this->payment->getMerchantOrderId(),
-            Constants::DESC_PARAM => $this->getTendoPayDescription(),
-            Constants::VENDOR_ID_PARAM => $this->getMerchantId(),
+            'tp_currency' => $this->payment->getCurrency(),
+            ConstantsV2::AMOUNT_PARAM => $this->payment->getRequestAmount(),
+            ConstantsV2::ORDER_ID_PARAM => $this->payment->getMerchantOrderId(),
+            ConstantsV2::DESC_PARAM => $this->payment->getDescription(),
+            ConstantsV2::REDIRECT_URL_PARAM => $this->payment->getRedirectUrl(),
         ];
 
-        $requestToken = $this->getRequestToken($params);
+        $order = $this->createPaymentOrder($params);
 
-        $params = array_merge($params, [
-            Constants::AUTH_TOKEN_PARAM => $requestToken,
-        ]);
-
-        $this->requestPaymentDescription($params);
-
-        $params = array_merge($params, [
-            Constants::REDIRECT_URL_PARAM => $this->redirectURL,
-            Constants::VENDOR_PARAM => $this->getMerchantId(),
-        ]);
-
-        return Constants::get_redirect_uri().'?'.http_build_query(static::appendHash($params));
+        return $order->authorize_url ?? '';
     }
 
     /**
-     * @param $orderId
-     * @param  VerifyTransactionRequest  $request
+     * Just validity check with x_signature
      * @return VerifyTransactionResponse
-     * @throws TendoPayConnectionException
-     * @throws VerifyTransactionException
      */
-    public function verifyTransaction($orderId, VerifyTransactionRequest $request): VerifyTransactionResponse
+    public function verifyTransaction(): VerifyTransactionResponse
     {
-        if ($orderId !== $request->getMerchantOrderId()) {
-            throw new VerifyTransactionException('Invalid orderId');
+        if (func_num_args() === 2) {
+            $request = func_get_arg(1);
+        } else {
+            $request = func_get_arg(0);
         }
 
-        $params = [
-            Constants::DISPOSITION_PARAM => $request->getDisposition(),
+        if (!($request instanceof VerifyTransactionRequest)) {
+            throw new InvalidArgumentException('$request should be VerifyTransactionRequest');
+        }
+
+        $expected = static::hashForV2($request->getRequest());
+
+        $isHashValid = hash_equals($expected, $request->getHash());
+
+        $status = $request->getDisposition();
+        $message = $request->getRequest()['tp_message'] ?? '';
+
+        if (!$isHashValid) {
+            $status = ConstantsV2::STATUS_FAILURE;
+            $message = 'Invalid signature';
+        }
+
+        $data = [
+            'is_hash_valid' => $isHashValid,
+            Constants::STATUS_PARAM => $status,
+            Constants::MESSAGE_PARAM => $message,
             Constants::TRANSACTION_NO_PARAM => $request->getTransactionNumber(),
-            Constants::USER_ID_PARAM => $request->getUserId(),
-            Constants::VERIFICATION_TOKEN_PARAM => $request->getVerificationToken(),
-            Constants::VENDOR_ID_PARAM => $this->getMerchantId(),
-            Constants::ORDER_ID_PARAM => $orderId,
+            Constants::HASH_PARAM => $request->getHash(),
         ];
-
-        $response = $this->request('GET',
-            Constants::get_verification_endpoint_uri(),
-            static::appendHash($params),
-            $this->getAuthorizationHeader(), true);
-
-        $data = json_decode($response, true) ?? [];
 
         return new VerifyTransactionResponse($data);
     }
@@ -404,10 +404,8 @@ class TendoPayClient
     public static function isCallbackRequest($request): bool
     {
         return isset(
-            $request[Constants::DISPOSITION_PARAM],
-            $request[Constants::TRANSACTION_NO_PARAM],
-            $request[Constants::VERIFICATION_TOKEN_PARAM],
-            $request[Constants::HASH_PARAM]
+            $request[ConstantsV2::STATUS_PARAM],
+            $request[ConstantsV2::TRANSACTION_NO_PARAM]
         );
     }
 
@@ -419,16 +417,13 @@ class TendoPayClient
      */
     public function getTransactionDetail($transactionNumber): Transaction
     {
-        $usePersonalAccessToken = false;
-        try {
-            $usePersonalAccessToken = (bool) $this->getPersonalAccessToken();
-        } catch (\InvalidArgumentException $e) {}
-
-        $params = [];
-        $response = $this->request('GET',
-            Constants::getTransactionDetailEndpointURI($transactionNumber),
-            $params,
-            $this->getAuthorizationHeader($usePersonalAccessToken), true);
+        $params = [
+            ConstantsV2::TRANSACTION_NO_PARAM => $transactionNumber,
+        ];
+        $response = $this->request('POST',
+            ConstantsV2::getTransactionDetailEndpointURI($transactionNumber),
+            static::appendV2Hash($params),
+            $this->getAuthorizationHeader(), true);
 
         $transaction = json_decode($response, true);
 
@@ -444,12 +439,25 @@ class TendoPayClient
     public function cancelPayment($transactionNumber)
     {
         $params = [
-            Constants::TRANSACTION_NO_PARAM => $transactionNumber,
+            ConstantsV2::TRANSACTION_NO_PARAM => $transactionNumber,
         ];
 
         return $this->request('POST',
-            Constants::get_cancel_payment_endpoint_uri(),
-            static::appendHash($params),
+            ConstantsV2::get_cancel_payment_endpoint_uri(),
+            static::appendV2Hash($params),
+            $this->getAuthorizationHeader());
+    }
+
+    /**
+     * @param $params
+     * @return mixed
+     * @throws TendoPayConnectionException
+     */
+    public function createPaymentOrder($params)
+    {
+        return $this->request('POST',
+            ConstantsV2::get_create_payment_order_endpoint_uri(),
+            static::appendV2Hash($params),
             $this->getAuthorizationHeader());
     }
 }

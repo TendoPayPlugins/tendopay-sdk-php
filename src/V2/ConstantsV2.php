@@ -1,13 +1,13 @@
 <?php
 
-namespace TendoPay\SDK;
+namespace TendoPay\SDK\V2;
 
 /**
  * Configuration class.
  *
  * @package TendoPay\API
  */
-class Constants
+class ConstantsV2
 {
 
     public const PAYMENT_FAILED_QUERY_PARAM = 'tendopay_payment_failed';
@@ -20,16 +20,17 @@ class Constants
     public const SANDBOX_BASE_API_URL = 'https://sandbox.tendopay.ph';
 
     public const REDIRECT_URI = 'payments/authorise';
-    public const VERIFICATION_ENDPOINT_URI = 'payments/api/v1/verification';
-    public const AUTHORIZATION_ENDPOINT_URI = 'payments/api/v1/authTokenRequest';
-    public const DESCRIPTION_ENDPOINT_URI = 'payments/api/v1/paymentDescription';
+//    public const VERIFICATION_ENDPOINT_URI = 'payments/api/v1/verification';
+//    public const AUTHORIZATION_ENDPOINT_URI = 'payments/api/v1/authTokenRequest';
+//    public const DESCRIPTION_ENDPOINT_URI = 'payments/api/v1/paymentDescription';
     public const BEARER_TOKEN_ENDPOINT_URI = 'oauth/token';
-    public const ORDER_STATUS_TRANSITION_ENDPOINT_URI = 'payments/api/v1/orderUpdate';
-    public const CANCEL_PAYMENT_ENDPOINT_URI = 'payments/api/v1/cancelPayment';
+//    public const ORDER_STATUS_TRANSITION_ENDPOINT_URI = 'payments/api/v1/orderUpdate';
+    public const CANCEL_PAYMENT_ENDPOINT_URI = 'payments/api/v2/cancelPayment';
+    public const CREATE_PAYMENT_ORDER_ENDPOINT_URI = 'payments/api/v2/order';
     /**
      * Gets the transaction detail endpoint uri
      */
-    public const TRANSACTION_DETAIL_ENDPOINT_URI = 'merchants/api/v1/transactions/{transactionNumber}';
+    public const TRANSACTION_DETAIL_ENDPOINT_URI = 'payments/api/v2/showTransaction';
 
     public const TENDOPAY_ICON = 'https://s3.ca-central-1.amazonaws.com/candydigital/images/tendopay/tp-icon-32x32.png';
     public const TENDOPAY_FAQ = 'https://tendopay.ph/page-faq.html';
@@ -38,36 +39,37 @@ class Constants
     /**
      * Below public constant names are used as keys of data send to or received from TP API
      */
-    public const AMOUNT_PARAM = 'tendopay_amount';
+    public const AMOUNT_PARAM = 'tp_amount';
     public const AUTH_TOKEN_PARAM = 'tendopay_authorisation_token';
-    public const ORDER_ID_PARAM = 'tendopay_customer_reference_1';
+    public const ORDER_ID_PARAM = 'tp_merchant_order_id';
     public const ORDER_KEY_PARAM = 'tendopay_customer_reference_2';
-    public const REDIRECT_URL_PARAM = 'tendopay_redirect_url';
+    public const REDIRECT_URL_PARAM = 'tp_redirect_url';
     public const VENDOR_ID_PARAM = 'tendopay_tendo_pay_vendor_id';
     public const VENDOR_PARAM = 'tendopay_vendor';
-    public const HASH_PARAM = 'tendopay_hash';
+    public const HASH_PARAM = 'x_signature';
     public const DISPOSITION_PARAM = 'tendopay_disposition';
-    public const TRANSACTION_NO_PARAM = 'tendopay_transaction_number';
-    public const VERIFICATION_TOKEN_PARAM = 'tendopay_verification_token';
-    public const DESC_PARAM = 'tendopay_description';
-    public const STATUS_PARAM = 'tendopay_status';
-    public const USER_ID_PARAM = 'tendopay_user_id';
+    public const TRANSACTION_NO_PARAM = 'tp_transaction_id';
+    public const VERIFICATION_TOKEN_PARAM = 'x_signature';
+    public const DESC_PARAM = 'tp_description';
+    public const STATUS_PARAM = 'tp_transaction_status';
+    public const USER_ID_PARAM = 'tp_user_id';
     public const ORDER_UPDATE_PARAM = 'tendopay_order_update';
 
     public const MESSAGE_PARAM = 'tendopay_message';
 
-    public const STATUS_SUCCESS = 'success';
-    public const STATUS_FAILURE = 'failure';
+    public const STATUS_SUCCESS = 'PAID';
+    public const STATUS_FAILURE = 'FAILED';
+    public const STATUS_CANCELED = 'CANCELED';
 
     /**
      * Notification Parameters
      */
-    public const TRANSACTION_STATUS = 'status';
+    public const TRANSACTION_STATUS = 'tp_transaction_status';
     public const NOTIFIED_AT = 'notified_at';
-    public const MERCHANT_ID = 'merchant_id';
-    public const MERCHANT_ORDER_ID = 'merchant_order_id';
-    public const AMOUNT = 'amount';
-    public const CREATED_AT = 'created_at';
+    public const MERCHANT_ID = 'tp_merchant_id';
+    public const MERCHANT_ORDER_ID = 'tp_merchant_order_id';
+    public const AMOUNT = 'tp_amount';
+    public const CREATED_AT = 'tp_created_at';
 
 
     /**
@@ -210,5 +212,10 @@ class Constants
     public static function get_cancel_payment_endpoint_uri(): string
     {
         return self::CANCEL_PAYMENT_ENDPOINT_URI;
+    }
+
+    public static function get_create_payment_order_endpoint_uri(): string
+    {
+        return self::CREATE_PAYMENT_ORDER_ENDPOINT_URI;
     }
 }
