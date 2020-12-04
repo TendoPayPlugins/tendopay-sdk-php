@@ -9,22 +9,25 @@ class VerifyTransactionResponse
     /**
      * @var string
      */
-    private $status;
+    protected $status;
 
     /**
      * @var string
      */
-    private $message;
+    protected $message;
 
     /**
      * @var string
      */
-    private $transactionNumber;
+    protected $transactionNumber;
 
     /**
      * @var string
      */
-    private $hash;
+    protected $hash;
+
+
+    protected $isHashValid = null;
 
     /**
      * VerifyTransactionResult constructor.
@@ -40,6 +43,9 @@ class VerifyTransactionResponse
      */
     public function __construct(array $response)
     {
+        if (array_key_exists('is_hash_valid', $response)) {
+            $this->isHashValid = $response['is_hash_valid'] ?? null;
+        }
         $this->status = $response[Constants::STATUS_PARAM] ?? 'failure';
         $this->message = $response[Constants::MESSAGE_PARAM] ?? '';
         $this->transactionNumber = $response[Constants::TRANSACTION_NO_PARAM] ?? '';
@@ -83,6 +89,9 @@ class VerifyTransactionResponse
      */
     public function isVerified(): bool
     {
+        if ($this->isHashValid !== null) {
+            return $this->isHashValid;
+        }
         return $this->status === Constants::STATUS_SUCCESS;
     }
 

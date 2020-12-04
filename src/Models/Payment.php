@@ -30,15 +30,36 @@ class Payment
      */
     private $items;
 
+
+    /**
+     * Redirect Url
+     * @var
+     */
+    private $redirectUrl;
+
+    /**
+     * Currency
+     * @var
+     */
+    private $currency;
+
     /**
      * TendoPayOrder constructor.
      * @param array $params
      */
     public function __construct(array $params = [])
     {
-        $this->merchantOrderId = $params['merchant_order_id'] ?? null;
-        $this->description = $params['description'] ?? '';
-        $this->requestAmount = $params['request_amount'] ?? 0;
+        if ($params['tp_amount'] ?? null) {
+            $this->requestAmount = $params['tp_amount'] ?? 0;
+            $this->currency = $params['tp_currency'] ?? 'PHP';
+            $this->merchantOrderId = $params['tp_merchant_order_id'] ?? null;
+            $this->description = $params['tp_description'] ?? '';
+            $this->redirectUrl = $params['tp_redirect_url'] ?? '';
+        } else {
+            $this->merchantOrderId = $params['merchant_order_id'] ?? null;
+            $this->description = $params['description'] ?? '';
+            $this->requestAmount = $params['request_amount'] ?? 0;
+        }
     }
 
     /**
@@ -112,5 +133,41 @@ class Payment
     {
         $this->items = $items;
         return $this;
+    }
+
+    /**
+     * @param  string  $currency
+     * @return Payment
+     */
+    public function setCurrency(string $currency): self
+    {
+        $this->currency = $currency;
+        return $this;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
+    }
+
+    /**
+     * @param  string  $redirectUrl
+     * @return Payment
+     */
+    public function setRedirectUrl(string $redirectUrl): self
+    {
+        $this->redirectUrl = $redirectUrl;
+        return $this;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getRedirectUrl()
+    {
+        return $this->redirectUrl;
     }
 }
