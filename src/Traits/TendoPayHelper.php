@@ -43,7 +43,7 @@ trait TendoPayHelper
         $message = array_reduce(array_keys($payload), static function ($p, $k) use ($payload) {
             return strpos($k, 'tp_') === 0 ? $p.$k.trim($payload[$k]) : $p;
         }, '');
-        return hash_hmac('sha256', $message, self::getClientSecret());
+        return hash_hmac('sha256', $message, static::getClientSecret());
     }
 
     /**
@@ -86,7 +86,7 @@ trait TendoPayHelper
     /**
      * @return string
      */
-    public function getClientId(): string
+    public static function getClientId(): string
     {
         return (string)getenv('CLIENT_ID');
     }
@@ -94,7 +94,7 @@ trait TendoPayHelper
     /**
      * @return string
      */
-    public function getClientSecret(): string
+    public static function getClientSecret(): string
     {
         return (string)getenv('CLIENT_SECRET');
     }
@@ -102,7 +102,7 @@ trait TendoPayHelper
     /**
      * @return string
      */
-    public function getMerchantId(): string
+    public static function getMerchantId(): string
     {
         return (string)getenv('MERCHANT_ID');
     }
