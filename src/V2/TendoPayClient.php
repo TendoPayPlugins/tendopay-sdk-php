@@ -220,8 +220,8 @@ class TendoPayClient
 
         $params = [
             'grant_type' => 'client_credentials',
-            'client_id' => $this->getClientId(),
-            'client_secret' => $this->getClientSecret(),
+            'client_id' => static::getClientId(),
+            'client_secret' => static::getClientSecret(),
         ];
         $body = $this->request('POST',
             ConstantsV2::get_bearer_token_endpoint_uri(),
