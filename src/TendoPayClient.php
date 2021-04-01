@@ -218,8 +218,8 @@ class TendoPayClient
 
         $params = [
             'grant_type' => 'client_credentials',
-            'client_id' => $this->getClientId(),
-            'client_secret' => $this->getClientSecret(),
+            'client_id' => static::getClientId(),
+            'client_secret' => static::getClientSecret(),
         ];
         $body = $this->request('POST',
             Constants::get_bearer_token_endpoint_uri(),
@@ -343,7 +343,7 @@ class TendoPayClient
             Constants::AMOUNT_PARAM => $this->payment->getRequestAmount(),
             Constants::ORDER_ID_PARAM => $this->payment->getMerchantOrderId(),
             Constants::DESC_PARAM => $this->getTendoPayDescription(),
-            Constants::VENDOR_ID_PARAM => $this->getMerchantId(),
+            Constants::VENDOR_ID_PARAM => static::getMerchantId(),
         ];
 
         $requestToken = $this->getRequestToken($params);
@@ -356,7 +356,7 @@ class TendoPayClient
 
         $params = array_merge($params, [
             Constants::REDIRECT_URL_PARAM => $this->redirectURL,
-            Constants::VENDOR_PARAM => $this->getMerchantId(),
+            Constants::VENDOR_PARAM => static::getMerchantId(),
         ]);
 
         return Constants::get_redirect_uri().'?'.http_build_query(static::appendHash($params));
@@ -380,7 +380,7 @@ class TendoPayClient
             Constants::TRANSACTION_NO_PARAM => $request->getTransactionNumber(),
             Constants::USER_ID_PARAM => $request->getUserId(),
             Constants::VERIFICATION_TOKEN_PARAM => $request->getVerificationToken(),
-            Constants::VENDOR_ID_PARAM => $this->getMerchantId(),
+            Constants::VENDOR_ID_PARAM => static::getMerchantId(),
             Constants::ORDER_ID_PARAM => $orderId,
         ];
 
