@@ -6,13 +6,12 @@ use Exception;
 use InvalidArgumentException;
 use TendoPay\SDK\Constants;
 use TendoPay\SDK\Exception\TendoPayConnectionException;
-use TendoPay\SDK\Exception\VerifyTransactionException;
 use TendoPay\SDK\Models\AccessToken;
 use TendoPay\SDK\Models\Payment;
 use TendoPay\SDK\Models\Transaction;
 use TendoPay\SDK\Models\VerifyTransactionRequest;
 use TendoPay\SDK\Models\VerifyTransactionResponse;
-use TendoPay\SDK\Traits\TendoPayHelper;
+use TendoPay\SDK\Traits\V2\TendoPayHelper;
 
 /**
  *  A sample class
@@ -31,12 +30,6 @@ class TendoPayClient
     public const STATUS_FAILURE = ConstantsV2::STATUS_FAILURE;
 
     /**
-     * Configuration
-     * @var array
-     */
-    protected $config;
-
-    /**
      * @var Payment
      */
     protected $payment;
@@ -48,15 +41,10 @@ class TendoPayClient
 
     /**
      * Redirect URL when the transaction succeeds
+     *
      * @var string
      */
     protected $redirectURL;
-
-//    /**
-//     * Redirect URL when the transaction fails
-//     * @var string
-//     */
-//    protected $errorRedirectURL;
 
     /**
      * @var bool
@@ -65,43 +53,25 @@ class TendoPayClient
 
     /**
      * TendoPayClient constructor.
+     *
      * @param  array  $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
-        $this->config = $config;
-        $this->debug = $config['TENDOPAY_DEBUG'] ?? getenv('TENDOPAY_DEBUG') ?? false;
-        $this->initCredentials();
-        $this->setSandBoxMode($config['TENDOPAY_SANDBOX_ENABLED'] ?? getenv('TENDOPAY_SANDBOX_ENABLED', true) ?? false);
+        ConstantsV2::setEnv($config);
+        $this->debug = self::toBoolean(ConstantsV2::getEnv('TENDOPAY_DEBUG'));
+        $this->setSandBoxMode(self::toBoolean(ConstantsV2::getEnv('TENDOPAY_SANDBOX_ENABLED')));
         $this->initRedirectURL();
     }
 
     /**
      * Set Sandbox configuration
-     * @param $bool
+     *
+     * @param  bool  $bool
      */
-    protected function setSandBoxMode($bool): void
+    protected function setSandBoxMode(bool $bool): void
     {
-        putenv('TENDOPAY_SANDBOX_ENABLED='.$bool);
-    }
-
-    /**
-     * Set credentials
-     */
-    protected function initCredentials(): void
-    {
-//        if (isset($this->config['MERCHANT_ID'])) {
-//            putenv("MERCHANT_ID=".$this->config['MERCHANT_ID']);
-//        }
-//        if (isset($this->config['MERCHANT_SECRET'])) {
-//            putenv("MERCHANT_SECRET=".$this->config['MERCHANT_SECRET']);
-//        }
-        if (isset($this->config['CLIENT_ID'])) {
-            putenv("CLIENT_ID=".$this->config['CLIENT_ID']);
-        }
-        if (isset($this->config['CLIENT_SECRET'])) {
-            putenv("CLIENT_SECRET=".$this->config['CLIENT_SECRET']);
-        }
+        ConstantsV2::putEnv('TENDOPAY_SANDBOX_ENABLED', $bool);
     }
 
     /**
@@ -109,23 +79,28 @@ class TendoPayClient
      */
     protected function initRedirectURL(): void
     {
-        $this->redirectURL = $this->config['REDIRECT_URL'] ?? (string) getenv('REDIRECT_URL', true);
-//        $this->errorRedirectURL = $this->config['ERROR_REDIRECT_URL'] ?? (string) getenv('ERROR_REDIRECT_URL', true);
+        $this->redirectURL = ConstantsV2::getEnv('REDIRECT_URL');
     }
 
     /**
-     * @param $method
-     * @param $endPointURL
-     * @param $data
-     * @param $headers
+     * @param  string  $method
+     * @param  string  $endPointURL
+     * @param  array|string|null  $data
+     * @param  array|null  $headers
      * @param  false  $debug
-     * @return mixed
+     *
+     * @return bool|string
      */
-    protected function requestCurl($method, $endPointURL, $data, $headers, $debug = false)
-    {
+    protected function requestCurl(
+        string $method,
+        string $endPointURL,
+        $data,
+        ?array $headers,
+        bool $debug = false
+    ) {
         $ch = curl_init();
 
-        if (strtoupper($method) == 'GET') {
+        if (strtoupper($method) === 'GET') {
             if ($data) {
                 $endPointURL .= '?'.http_build_query($data);
             }
@@ -163,27 +138,38 @@ class TendoPayClient
     }
 
     /**
-     * @param $method
-     * @param $requestURI
-     * @param $params
-     * @param  array  $headers
+     * @param  string  $method
+     * @param  string  $requestURI
+     * @param  array|null  $params
+     * @param  array|null  $headers
      * @param  bool  $rawOutput
+     *
      * @return mixed
-     * @throws TendoPayConnectionException
+     * @throws \TendoPay\SDK\Exception\TendoPayConnectionException
      */
-    protected function request($method, $requestURI, $params, $headers = [], $rawOutput = false)
-    {
+    protected function request(
+        string $method,
+        string $requestURI,
+        ?array $params,
+        ?array $headers = [],
+        bool $rawOutput = false
+    ) {
         try {
             $data = $method === 'GET' ? $params : json_encode($params);
             $response = $this->requestCurl(
                 $method,
                 ConstantsV2::get_base_api_url().DIRECTORY_SEPARATOR.$requestURI,
                 $data,
-                array_merge([
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'X-Using' => 'TendoPay_PHP_SDK_Client/1.0',
-                ], $headers), $this->debug);
+                array_merge(
+                    [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Using' => 'TendoPay_PHP_SDK_Client/2.0',
+                    ],
+                    $headers
+                ),
+                $this->debug
+            );
 
             return $rawOutput ? $response : json_decode($response, false);
         } catch (\Exception $e) {
@@ -193,14 +179,15 @@ class TendoPayClient
 
     /**
      * @param  bool  $usePersonalAccessToken
+     *
      * @return array
      * @throws TendoPayConnectionException
      */
-    protected function getAuthorizationHeader($usePersonalAccessToken = false): array
+    protected function getAuthorizationHeader(bool $usePersonalAccessToken = false): array
     {
-        $accessToken = $usePersonalAccessToken ?
-            $this->getPersonalAccessToken() :
-            $this->getAccessToken();
+        $accessToken = $usePersonalAccessToken
+            ? $this->getPersonalAccessToken()
+            : $this->getAccessToken();
 
         return [
             'Authorization' => 'Bearer '.$accessToken,
@@ -214,7 +201,8 @@ class TendoPayClient
     protected function getAccessToken(): string
     {
         if ($this->accessToken instanceof AccessToken
-            && !$this->accessToken->isExpired()) {
+            && ! $this->accessToken->isExpired()
+        ) {
             return $this->accessToken->getToken();
         }
 
@@ -223,9 +211,13 @@ class TendoPayClient
             'client_id' => $this->getClientId(),
             'client_secret' => $this->getClientSecret(),
         ];
-        $body = $this->request('POST',
+        $body = $this->request(
+            'POST',
             ConstantsV2::get_bearer_token_endpoint_uri(),
-            $params, [], true);
+            $params,
+            [],
+            true
+        );
 
         $token = json_decode($body, true);
         $this->accessToken = new AccessToken($token);
@@ -235,45 +227,17 @@ class TendoPayClient
 
     /**
      * Return Personal Access Token
+     *
      * @return string
      */
     protected function getPersonalAccessToken(): string
     {
-        $token = $this->config['MERCHANT_PERSONAL_ACCESS_TOKEN'] ?? (string) getenv('MERCHANT_PERSONAL_ACCESS_TOKEN',
-                true);
-        if (!$token) {
+        $token = ConstantsV2::getEnv('MERCHANT_PERSONAL_ACCESS_TOKEN');
+        if (! $token) {
             throw new InvalidArgumentException('MERCHANT_PERSONAL_ACCESS_TOKEN does not exists');
         }
 
         return $token;
-    }
-
-    /**
-     * @param $params
-     * @return mixed|string
-     * @throws TendoPayConnectionException
-     * @deprecated in v2
-     */
-    protected function getRequestToken($params)
-    {
-        return $this->request('POST',
-            ConstantsV2::get_authorization_endpoint_uri(),
-            static::appendV2Hash($params),
-            $this->getAuthorizationHeader());
-    }
-
-    /**
-     * @param $params
-     * @return array|string
-     * @throws TendoPayConnectionException
-     */
-    protected function requestPaymentDescription($params)
-    {
-        return $this->request('POST',
-            ConstantsV2::get_description_endpoint_uri(),
-            static::appendV2Hash($params),
-            $this->getAuthorizationHeader(),
-            true);
     }
 
     /** Public Methods **/
@@ -292,6 +256,7 @@ class TendoPayClient
 
     /**
      * @param  string  $url
+     *
      * @return TendoPayClient
      */
     public function setRedirectURL(string $url): self
@@ -301,21 +266,11 @@ class TendoPayClient
         return $this;
     }
 
-//    /**
-//     * @param  string  $url
-//     * @return TendoPayClient
-//     */
-//    public function setErrorRedirectURL(string $url): self
-//    {
-//        $this->errorRedirectURL = $url;
-//
-//        return $this;
-//    }
-
     /**
      * Enable Sandbox mode
      *
      * @param  bool  $bool
+     *
      * @return TendoPayClient
      */
     public function enableSandBox(bool $bool = true): self
@@ -327,6 +282,7 @@ class TendoPayClient
 
     /**
      * @param  Payment  $payment
+     *
      * @return TendoPayClient
      */
     public function setPayment(Payment $payment): self
@@ -357,6 +313,7 @@ class TendoPayClient
 
     /**
      * Just validity check with x_signature
+     *
      * @return VerifyTransactionResponse
      */
     public function verifyTransaction(): VerifyTransactionResponse
@@ -367,8 +324,10 @@ class TendoPayClient
             $request = func_get_arg(0);
         }
 
-        if (!($request instanceof VerifyTransactionRequest)) {
-            throw new InvalidArgumentException('$request should be VerifyTransactionRequest');
+        if (! ($request instanceof VerifyTransactionRequest)) {
+            throw new InvalidArgumentException(
+                '$request should be VerifyTransactionRequest'
+            );
         }
 
         $expected = static::hashForV2($request->getRequest());
@@ -378,7 +337,7 @@ class TendoPayClient
         $status = $request->getDisposition();
         $message = $request->getRequest()['tp_message'] ?? '';
 
-        if (!$isHashValid) {
+        if (! $isHashValid) {
             $status = ConstantsV2::STATUS_FAILURE;
             $message = 'Invalid signature';
         }
@@ -398,10 +357,11 @@ class TendoPayClient
      * Check required fields of the callback request
      * if the given request is a callback request or not
      *
-     * @param $request
+     * @param  array|null  $request
+     *
      * @return bool
      */
-    public static function isCallbackRequest($request): bool
+    public static function isCallbackRequest(?array $request): bool
     {
         return isset(
             $request[ConstantsV2::STATUS_PARAM],
@@ -411,7 +371,9 @@ class TendoPayClient
 
     /**
      * Retrieve Transaction Details with the transactionNumber
-     * @param $transactionNumber
+     *
+     * @param  numeric|string  $transactionNumber
+     *
      * @return Transaction
      * @throws Exception
      */
@@ -420,10 +382,13 @@ class TendoPayClient
         $params = [
             ConstantsV2::TRANSACTION_NO_PARAM => $transactionNumber,
         ];
-        $response = $this->request('POST',
+        $response = $this->request(
+            'POST',
             ConstantsV2::getTransactionDetailEndpointURI($transactionNumber),
             static::appendV2Hash($params),
-            $this->getAuthorizationHeader(), true);
+            $this->getAuthorizationHeader(),
+            true
+        );
 
         $transaction = json_decode($response, true);
 
@@ -432,7 +397,9 @@ class TendoPayClient
 
     /**
      * Cancel transaction
-     * @param $transactionNumber
+     *
+     * @param  numeric|string  $transactionNumber
+     *
      * @return mixed|string
      * @throws TendoPayConnectionException
      */
@@ -442,24 +409,27 @@ class TendoPayClient
             ConstantsV2::TRANSACTION_NO_PARAM => $transactionNumber,
         ];
 
-        return $this->request('POST',
+        return $this->request(
+            'POST',
             ConstantsV2::get_cancel_payment_endpoint_uri(),
             static::appendV2Hash($params),
-            $this->getAuthorizationHeader());
+            $this->getAuthorizationHeader()
+        );
     }
 
     /**
-     * @param $params
+     * @param  array  $params
+     *
      * @return mixed
      * @throws TendoPayConnectionException
      */
-    public function createPaymentOrder($params)
+    public function createPaymentOrder(array $params)
     {
-        return $this->request('POST',
+        return $this->request(
+            'POST',
             ConstantsV2::get_create_payment_order_endpoint_uri(),
             static::appendV2Hash($params),
-            $this->getAuthorizationHeader());
+            $this->getAuthorizationHeader()
+        );
     }
 }
-
-
