@@ -32,7 +32,7 @@ function dump()
  */
 function json($response = [], $status = 200)
 {
-    echo header('Content-Type: application/json', true, $status);
+    header('Content-Type: application/json', true, $status);
     echo json_encode($response);
 }
 
@@ -53,7 +53,7 @@ $config = [
     'CLIENT_SECRET' => $credentials->client_secret ?? '',
     'REDIRECT_URL' => $credentials->redirect_url ?? '',
     'ERROR_REDIRECT_URL' => $credentials->error_redirect_url ?? '',
+    'SANDBOX_HOST_URL' => getenv('SANDBOX_HOST_URL'),
     'TENDOPAY_SANDBOX_ENABLED' => true,
     'TENDOPAY_DEBUG' => true,
 ];
-

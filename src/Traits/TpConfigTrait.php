@@ -41,7 +41,7 @@ trait TpConfigTrait
      */
     public static function getEnv(string $key): ?string
     {
-        return self::$envConfig[$key] ?? null;
+        return self::$envConfig[$key] ?? getenv($key) ?? null;
     }
 
     /**

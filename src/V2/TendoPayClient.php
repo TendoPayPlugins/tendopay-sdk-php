@@ -5,6 +5,7 @@ namespace TendoPay\SDK\V2;
 use Exception;
 use InvalidArgumentException;
 use TendoPay\SDK\Constants;
+use TendoPay\SDK\Contracts\HttpClientInterface;
 use TendoPay\SDK\Exception\TendoPayConnectionException;
 use TendoPay\SDK\Models\AccessToken;
 use TendoPay\SDK\Models\Payment;
@@ -12,6 +13,7 @@ use TendoPay\SDK\Models\Transaction;
 use TendoPay\SDK\Models\VerifyTransactionRequest;
 use TendoPay\SDK\Models\VerifyTransactionResponse;
 use TendoPay\SDK\Traits\V2\TendoPayHelper;
+use TendoPay\SDK\Utils\CurlClient;
 
 /**
  *  A sample class
@@ -23,7 +25,6 @@ use TendoPay\SDK\Traits\V2\TendoPayHelper;
  */
 class TendoPayClient
 {
-
     use TendoPayHelper;
 
     public const STATUS_SUCCESS = ConstantsV2::STATUS_SUCCESS;
@@ -32,7 +33,7 @@ class TendoPayClient
     /**
      * @var Payment
      */
-    protected $payment;
+    protected $payment = null;
 
     /**
      * @var AccessToken
@@ -51,6 +52,8 @@ class TendoPayClient
      */
     protected $debug = false;
 
+    protected $client;
+
     /**
      * TendoPayClient constructor.
      *
@@ -62,6 +65,16 @@ class TendoPayClient
         $this->debug = self::toBoolean(ConstantsV2::getEnv('TENDOPAY_DEBUG'));
         $this->setSandBoxMode(self::toBoolean(ConstantsV2::getEnv('TENDOPAY_SANDBOX_ENABLED')));
         $this->initRedirectURL();
+
+        $this->client = new CurlClient();
+    }
+
+    /**
+     * @param  HttpClientInterface  $client
+     */
+    public function setClient(HttpClientInterface $client): void
+    {
+        $this->client = $client;
     }
 
     /**
@@ -98,43 +111,7 @@ class TendoPayClient
         ?array $headers,
         bool $debug = false
     ) {
-        $ch = curl_init();
-
-        if (strtoupper($method) === 'GET') {
-            if ($data) {
-                $endPointURL .= '?'.http_build_query($data);
-            }
-        } else {
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        }
-
-        $curlHeaders = [];
-        foreach ($headers as $k => $v) {
-            $curlHeaders[] = "$k: $v";
-        }
-
-        curl_setopt($ch, CURLOPT_URL, $endPointURL);
-        curl_setopt($ch, CURLOPT_VERBOSE, $debug);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders);
-
-        $body = curl_exec($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-
-        if ((int) $status >= 400) {
-            $response = json_decode($body, false);
-            $error = $response->error ?? $response->message ?? curl_error($ch);
-            curl_close($ch);
-            throw new \UnexpectedValueException($error, $status);
-        }
-
-        curl_close($ch);
-
-        return $body;
+        return $this->client->sendRequest($method, $endPointURL, $data, $headers, $debug);
     }
 
     /**

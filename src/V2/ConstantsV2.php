@@ -3,6 +3,7 @@
 namespace TendoPay\SDK\V2;
 
 use TendoPay\SDK\Traits\TpConfigTrait;
+use TendoPay\SDK\Traits\V2\TendoPayHelper;
 
 /**
  * Configuration class.
@@ -12,6 +13,7 @@ use TendoPay\SDK\Traits\TpConfigTrait;
 class ConstantsV2
 {
     use TpConfigTrait;
+    use TendoPayHelper;
 
     public const PAYMENT_FAILED_QUERY_PARAM = 'tendopay_payment_failed';
 
@@ -147,7 +149,7 @@ class ConstantsV2
      */
     private static function is_sandbox_enabled(): bool
     {
-        return (bool) self::getEnv('TENDOPAY_SANDBOX_ENABLED');
+        return self::toBoolean(self::getEnv('TENDOPAY_SANDBOX_ENABLED'));
     }
 
     /**

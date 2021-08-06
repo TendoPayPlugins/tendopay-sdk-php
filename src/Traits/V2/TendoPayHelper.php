@@ -39,20 +39,6 @@ trait TendoPayHelper
     }
 
     /**
-     * Generate compatible legacy tendopay_description
-     *
-     * @return string
-     */
-    public function getTendoPayDescription(): string
-    {
-        $items = array_map(static function ($item) {
-            return $item->toArray();
-        }, $this->payment->getItems());
-
-        return json_encode(['items' => $items]);
-    }
-
-    /**
      * @return string
      */
     public function getClientId(): string
