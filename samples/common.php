@@ -1,4 +1,5 @@
 <?php
+//phpcs:ignoreFile
 spl_autoload_register(static function ($class) {
     $search = [
         '\\',

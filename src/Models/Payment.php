@@ -3,7 +3,6 @@
 
 namespace TendoPay\SDK\Models;
 
-
 class Payment
 {
     /**
@@ -33,15 +32,20 @@ class Payment
 
     /**
      * Redirect Url
-     * @var
+     * @var string $redirectUrl
      */
     private $redirectUrl;
 
     /**
      * Currency
-     * @var
+     * @var string $currency
      */
     private $currency;
+
+    /**
+     * @var array $meta
+     */
+    private $meta;
 
     /**
      * TendoPayOrder constructor.
@@ -55,6 +59,7 @@ class Payment
             $this->merchantOrderId = $params['tp_merchant_order_id'] ?? null;
             $this->description = $params['tp_description'] ?? '';
             $this->redirectUrl = $params['tp_redirect_url'] ?? '';
+            $this->meta = $params['tp_meta'] ?? '';
         } else {
             $this->merchantOrderId = $params['merchant_order_id'] ?? null;
             $this->description = $params['description'] ?? '';
@@ -169,5 +174,24 @@ class Payment
     public function getRedirectUrl()
     {
         return $this->redirectUrl;
+    }
+
+    /**
+     * @param  array  $meta
+     *
+     * @return $this
+     */
+    public function setMeta(array $meta): self
+    {
+        $this->meta = $meta;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMeta(): ?array
+    {
+        return $this->meta;
     }
 }

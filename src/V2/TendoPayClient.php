@@ -281,6 +281,7 @@ class TendoPayClient
             ConstantsV2::ORDER_ID_PARAM => $this->payment->getMerchantOrderId(),
             ConstantsV2::DESC_PARAM => $this->payment->getDescription(),
             ConstantsV2::REDIRECT_URL_PARAM => $this->payment->getRedirectUrl(),
+            'tp_meta' => json_encode($this->payment->getMeta()),
         ];
 
         $order = $this->createPaymentOrder($params);
