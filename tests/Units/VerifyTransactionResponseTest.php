@@ -1,4 +1,6 @@
 <?php
+// @codingStandardsIgnoreLine
+namespace Units;
 
 use PHPUnit\Framework\TestCase;
 use TendoPay\SDK\Models\VerifyTransactionResponse;
@@ -21,10 +23,6 @@ class VerifyTransactionResponseTest extends TestCase
 
         $verifyTransactionResponse = new VerifyTransactionResponse($data);
 
-        $this->assertEquals(true, is_array($verifyTransactionResponse->toArray()));
-
-
-        print_r($verifyTransactionResponse->toArray());
-
+        $this->assertIsArray($verifyTransactionResponse->toArray());
     }
 }
