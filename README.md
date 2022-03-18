@@ -44,7 +44,7 @@ http://localhost:8000/
 CLIENT_ID=
 CLIENT_SECRET=
 
-## Redirect URI when the transaction succeed
+## Redirect URI when the transaction is processed 
 REDIRECT_URL=https://localhost:8000/purhase.php
 
 ## Enable Sandbox, it must be false in production
