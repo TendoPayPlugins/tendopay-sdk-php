@@ -54,7 +54,6 @@ class CurlClient implements HttpClientInterface
         }
 
         curl_close($ch);
-        error_log($body);
         return $body;
     }
 }
