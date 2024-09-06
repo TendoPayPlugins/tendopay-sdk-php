@@ -196,6 +196,10 @@ class TendoPayClient
             true
         );
 
+        if (!$body) {
+            throw new InvalidArgumentException('Incorrect credentials');
+        }
+
         $token = json_decode($body, true);
         $this->accessToken = new AccessToken($token);
 
