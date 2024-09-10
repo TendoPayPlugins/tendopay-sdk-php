@@ -4,7 +4,9 @@ declare(strict_types=1);
 // @codingStandardsIgnoreLine
 namespace Units\V2;
 
+use Illuminate\Support\Str;
 use PHPUnit\Framework\TestCase;
+use TendoPay\SDK\Models\Payment;
 use TendoPay\SDK\Traits\TpConfigTrait;
 use TendoPay\SDK\Utils\CurlClient;
 use TendoPay\SDK\V2\ConstantsV2;
@@ -29,7 +31,7 @@ class TendoPayClientUnitTest extends TestCase
     }
 
     /**
-     * @param  array  $env
+     * @param array $env
      */
     private function initEnv(array $env = [])
     {
@@ -48,13 +50,13 @@ class TendoPayClientUnitTest extends TestCase
             'REDIRECT_URL' => 'CONFIG_REDIRECT_URL',
         ]);
 
-        $baseUrl = ConstantsV2::get_base_api_url().DIRECTORY_SEPARATOR;
+        $baseUrl = ConstantsV2::get_base_api_url() . DIRECTORY_SEPARATOR;
 
         $mock = \Mockery::mock(CurlClient::class);
 
         $mock->shouldReceive('sendRequest')
             ->once()
-            ->withSomeOfArgs($baseUrl.ConstantsV2::get_bearer_token_endpoint_uri())
+            ->withSomeOfArgs($baseUrl . ConstantsV2::get_bearer_token_endpoint_uri())
             ->andReturn(json_encode([
                 'token_type' => 'Bearer',
                 'expires_in' => 604800,
@@ -70,9 +72,9 @@ class TendoPayClientUnitTest extends TestCase
 
 
     /**
-     * @param  array  $env
-     * @param  array  $config
-     * @param  array  $expect
+     * @param array $env
+     * @param array $config
+     * @param array $expect
      *
      * @dataProvider configDataProvider
      */
@@ -92,7 +94,7 @@ class TendoPayClientUnitTest extends TestCase
     /**
      * @return array
      */
-    public function configDataProvider(): array
+    public static function configDataProvider(): array
     {
         return [
             // config should be higher priority than env
@@ -172,6 +174,32 @@ class TendoPayClientUnitTest extends TestCase
         ];
     }
 
+    public function testIncorrectCredentialShouldThrowException(): void
+    {
+        $client = new TendoPayClient([
+            'CLIENT_ID' => 'CONFIG_CLIENT_ID',
+            'CLIENT_SECRET' => 'CONFIG_CLIENT_SECRET',
+            'SANDBOX_HOST_URL' => 'CONFIG_SANDBOX_HOST_URL',
+            'TENDOPAY_SANDBOX_ENABLED' => true,
+            'REDIRECT_URL' => 'CONFIG_REDIRECT_URL',
+        ]);
+
+        $payment = new Payment();
+        $payment->setMerchantOrderId(Str::uuid()->toString())
+            ->setDescription('Credential test product')
+            ->setRequestAmount(1999)
+            ->setCurrency('PHP')
+            ->setRedirectUrl('https://localhost');
+
+        $client->setPayment($payment);
+        
+        $this->assertInstanceOf(\TendoPay\SDK\V2\TendoPayClient::class, $client);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incorrect credentials');
+        $client->getAuthorizeLink();
+    }
+
     /**
      * @return mixed
      */
@@ -196,7 +224,7 @@ class TendoPayClientUnitTest extends TestCase
 
         $mock->shouldReceive('sendRequest')
             ->once()
-            ->withSomeOfArgs($baseUrl.ConstantsV2::get_create_payment_order_endpoint_uri())
+            ->withSomeOfArgs($baseUrl . ConstantsV2::get_create_payment_order_endpoint_uri())
             ->andReturn(json_encode((array) $expect));
 
 
